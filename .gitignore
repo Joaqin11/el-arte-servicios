@@ -1,0 +1,9 @@
+# Build results
+bin/
+obj/
+.vs/
+*.user
+*.log
+*.db-shm
+*.db-wal
+
