@@ -1,57 +1,71 @@
 ﻿using ElArteServicios.Models;
+using ElArteServicios.Repositories;
 
-namespace ElArteServicios.Services
+namespace ElArteServicios.Services;
+
+public class EmpleadoService
 {
-    public class EmpleadoService
+    private readonly EmpleadoRepository _repo;
+
+    public EmpleadoService(EmpleadoRepository repo)
     {
-        private readonly EmpleadoRepository _repo;
+        _repo = repo;
+    }
 
-        public EmpleadoService(EmpleadoRepository repo)
+    public void CrearEmpleado(string codigo, string nombre, string apellido)
+    {
+        ValidarDatos(codigo, nombre, apellido);
+
+        if (_repo.GetByCodigo(codigo.Trim()) != null)
+            throw new InvalidOperationException($"Ya existe un empleado con el código '{codigo}'.");
+
+        _repo.Add(new Empleado
         {
-            _repo = repo;
-        }
+            Codigo = codigo.Trim(),
+            Nombre = nombre.Trim(),
+            Apellido = apellido.Trim()
+        });
+    }
 
-        // Crear empleado
-        public void CrearEmpleado(string codigo, string nombre, string apellido)
-        {
-            var empleado = new Empleado
-            {
-                Codigo = codigo,
-                Nombre = nombre,
-                Apellido = apellido
-            };
+    public List<Empleado> ObtenerEmpleados() => _repo.GetAll();
 
-            _repo.Add(empleado);
-        }
+    public Empleado? ObtenerEmpleadoPorId(int id) => _repo.GetById(id);
 
-        // Obtener todos los empleados
-        public List<Empleado> ObtenerEmpleados()
-        {
-            return _repo.GetAll();
-        }
+    public void ActualizarEmpleado(int id, string codigo, string nombre, string apellido)
+    {
+        ValidarDatos(codigo, nombre, apellido);
 
-        // Obtener empleado por ID
-        public Empleado ObtenerEmpleadoPorId(int id)
-        {
-            return _repo.GetById(id);
-        }
+        var empleado = _repo.GetById(id)
+            ?? throw new InvalidOperationException("Empleado no encontrado.");
 
-        // Actualizar empleado
-        public void ActualizarEmpleado(int id, string nombre, string apellido)
-        {
-            var empleado = _repo.GetById(id);
-            if (empleado != null)
-            {
-                empleado.Nombre = nombre;
-                empleado.Apellido = apellido;
-                _repo.Update(empleado);
-            }
-        }
+        var duplicado = _repo.GetByCodigo(codigo.Trim());
+        if (duplicado != null && duplicado.IdEmpleado != id)
+            throw new InvalidOperationException($"Ya existe otro empleado con el código '{codigo}'.");
 
-        // Eliminar empleado
-        public void EliminarEmpleado(int id)
-        {
-            _repo.Delete(id);
-        }
+        empleado.Codigo = codigo.Trim();
+        empleado.Nombre = nombre.Trim();
+        empleado.Apellido = apellido.Trim();
+        _repo.Update(empleado);
+    }
+
+    public void EliminarEmpleado(int id)
+    {
+        if (_repo.GetById(id) == null)
+            throw new InvalidOperationException("Empleado no encontrado.");
+
+        if (_repo.TieneAsignaciones(id))
+            throw new InvalidOperationException("No se puede eliminar: el empleado tiene asignaciones.");
+
+        _repo.Delete(id);
+    }
+
+    private static void ValidarDatos(string codigo, string nombre, string apellido)
+    {
+        if (string.IsNullOrWhiteSpace(codigo))
+            throw new ArgumentException("El código es obligatorio.");
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre es obligatorio.");
+        if (string.IsNullOrWhiteSpace(apellido))
+            throw new ArgumentException("El apellido es obligatorio.");
     }
 }

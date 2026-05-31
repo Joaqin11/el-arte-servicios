@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace ElArteServicios.Models;
+﻿namespace ElArteServicios.Models;
 
 public partial class Sede
 {
@@ -10,4 +7,8 @@ public partial class Sede
     public string Nombre { get; set; } = null!;
 
     public virtual ICollection<Asignacion> Asignacions { get; set; } = new List<Asignacion>();
+
+    public virtual ICollection<Turno> Turnos { get; set; } = new List<Turno>();
+
+    public virtual ICollection<PlantillaTurno> Plantillas { get; set; } = new List<PlantillaTurno>();
 }

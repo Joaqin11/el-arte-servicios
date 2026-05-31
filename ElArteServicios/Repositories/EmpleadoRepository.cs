@@ -1,6 +1,8 @@
 ﻿using ElArteServicios.Data;
 using ElArteServicios.Models;
 
+namespace ElArteServicios.Repositories;
+
 public class EmpleadoRepository
 {
     private readonly ServiciosContext _context;
@@ -10,15 +12,15 @@ public class EmpleadoRepository
         _context = context;
     }
 
-    public List<Empleado> GetAll()
-    {
-        return _context.Empleados.ToList();
-    }
+    public List<Empleado> GetAll() => _context.Empleados.OrderBy(e => e.Apellido).ThenBy(e => e.Nombre).ToList();
 
-    public Empleado GetById(int id)
-    {
-        return _context.Empleados.FirstOrDefault(e => e.IdEmpleado == id);
-    }
+    public Empleado? GetById(int id) => _context.Empleados.FirstOrDefault(e => e.IdEmpleado == id);
+
+    public Empleado? GetByCodigo(string codigo) =>
+        _context.Empleados.FirstOrDefault(e => e.Codigo == codigo);
+
+    public bool TieneAsignaciones(int id) =>
+        _context.Asignaciones.Any(a => a.IdEmpleado == id);
 
     public void Add(Empleado empleado)
     {

@@ -1,55 +1,52 @@
 ﻿using ElArteServicios.Models;
 using ElArteServicios.Repositories;
 
-namespace ElArteServicios.Services
+namespace ElArteServicios.Services;
+
+public class SedeService
 {
-    public class SedeService
+    private readonly SedeRepository _repo;
+
+    public SedeService(SedeRepository repo)
     {
-        private readonly SedeRepository _repo;
+        _repo = repo;
+    }
 
-        public SedeService(SedeRepository repo)
-        {
-            _repo = repo;
-        }
+    public void CrearSede(string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre de la sede es obligatorio.");
 
-        // Crear sede
-        public void CrearSede(string nombre)
-        {
-            var sede = new Sede
-            {
-                Nombre = nombre
-            };
+        _repo.Add(new Sede { Nombre = nombre.Trim() });
+    }
 
-            _repo.Add(sede);
-        }
+    public List<Sede> ObtenerSedes() => _repo.GetAll();
 
-        // Obtener todas las sedes
-        public List<Sede> ObtenerSedes()
-        {
-            return _repo.GetAll();
-        }
+    public Sede? ObtenerSedePorId(int id) => _repo.GetById(id);
 
-        // Obtener sede por ID
-        public Sede ObtenerSedePorId(int id)
-        {
-            return _repo.GetById(id);
-        }
+    public void ActualizarSede(int id, string nombre)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre de la sede es obligatorio.");
 
-        // Actualizar sede
-        public void ActualizarSede(int id, string nombre)
-        {
-            var sede = _repo.GetById(id);
-            if (sede != null)
-            {
-                sede.Nombre = nombre;
-                _repo.Update(sede);
-            }
-        }
+        var sede = _repo.GetById(id)
+            ?? throw new InvalidOperationException("Sede no encontrada.");
 
-        // Eliminar sede
-        public void EliminarSede(int id)
-        {
-            _repo.Delete(id);
-        }
+        sede.Nombre = nombre.Trim();
+        _repo.Update(sede);
+    }
+
+    public void EliminarSede(int id)
+    {
+        if (_repo.GetById(id) == null)
+            throw new InvalidOperationException("Sede no encontrada.");
+
+        if (_repo.TieneTurnos(id))
+            throw new InvalidOperationException("No se puede eliminar la sede porque tiene turnos asociados.");
+
+        if (_repo.TieneAsignaciones(id))
+            throw new InvalidOperationException("No se puede eliminar la sede porque tiene asignaciones.");
+
+        _repo.Delete(id);
     }
 }

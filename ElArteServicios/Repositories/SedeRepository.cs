@@ -1,52 +1,45 @@
 ﻿using ElArteServicios.Data;
 using ElArteServicios.Models;
+using Microsoft.EntityFrameworkCore;
 
-namespace ElArteServicios.Repositories
+namespace ElArteServicios.Repositories;
+
+public class SedeRepository
 {
-    public class SedeRepository
+    private readonly ServiciosContext _context;
+
+    public SedeRepository(ServiciosContext context)
     {
-        private readonly ServiciosContext _context;
+        _context = context;
+    }
 
-        public SedeRepository(ServiciosContext context)
-        {
-            _context = context;
-        }
+    public List<Sede> GetAll() => _context.Sedes.OrderBy(s => s.Nombre).ToList();
 
-        // Obtener todas las sedes
-        public List<Sede> GetAll()
-        {
-            return _context.Sedes.ToList();
-        }
+    public Sede? GetById(int id) => _context.Sedes.FirstOrDefault(s => s.IdSede == id);
 
-        // Obtener sede por ID
-        public Sede GetById(int id)
-        {
-            return _context.Sedes.FirstOrDefault(s => s.IdSede == id);
-        }
+    public bool TieneTurnos(int id) => _context.Turnos.Any(t => t.IdSede == id);
 
-        // Agregar nueva sede
-        public void Add(Sede sede)
+    public bool TieneAsignaciones(int id) => _context.Asignaciones.Any(a => a.IdSede == id);
+
+    public void Add(Sede sede)
+    {
+        _context.Sedes.Add(sede);
+        _context.SaveChanges();
+    }
+
+    public void Update(Sede sede)
+    {
+        _context.Sedes.Update(sede);
+        _context.SaveChanges();
+    }
+
+    public void Delete(int id)
+    {
+        var sede = _context.Sedes.Find(id);
+        if (sede != null)
         {
-            _context.Sedes.Add(sede);
+            _context.Sedes.Remove(sede);
             _context.SaveChanges();
-        }
-
-        // Actualizar sede
-        public void Update(Sede sede)
-        {
-            _context.Sedes.Update(sede);
-            _context.SaveChanges();
-        }
-
-        // Eliminar sede
-        public void Delete(int id)
-        {
-            var sede = _context.Sedes.Find(id);
-            if (sede != null)
-            {
-                _context.Sedes.Remove(sede);
-                _context.SaveChanges();
-            }
         }
     }
 }

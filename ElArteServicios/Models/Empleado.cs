@@ -14,4 +14,6 @@ public partial class Empleado
     public string? Apellido { get; set; }
 
     public virtual ICollection<Asignacion> Asignacions { get; set; } = new List<Asignacion>();
+
+    public virtual ICollection<LicenciaEmpleado> Licencias { get; set; } = new List<LicenciaEmpleado>();
 }
